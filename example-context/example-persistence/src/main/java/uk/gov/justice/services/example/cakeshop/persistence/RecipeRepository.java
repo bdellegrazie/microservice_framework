@@ -14,15 +14,10 @@ import org.apache.deltaspike.data.api.AbstractEntityRepository;
 import org.apache.deltaspike.data.api.Repository;
 import org.apache.deltaspike.data.api.criteria.Criteria;
 import org.apache.deltaspike.data.api.criteria.CriteriaSupport;
-import uk.gov.justice.services.persistence.CakeShopUnitEntityManagerResolver;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 
 
 @Repository(forEntity = Recipe.class)
-@EntityManagerConfig(entityManagerResolver = CakeShopUnitEntityManagerResolver.class)
+//@EntityManagerConfig(entityManagerResolver = CakeShopUnitEntityManagerResolver.class)
 public abstract class RecipeRepository extends AbstractEntityRepository<Recipe, UUID> implements CriteriaSupport<Recipe> {
 
 

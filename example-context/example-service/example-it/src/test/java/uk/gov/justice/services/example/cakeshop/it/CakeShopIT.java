@@ -36,6 +36,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.json.JsonObjectBuilder;
 import javax.sql.DataSource;
+import javax.transaction.Transactional;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -157,6 +158,7 @@ public class CakeShopIT {
     }
 
   @Test
+//  @Transactional
     public void shouldRegisterRecipeRemovedEvent() {
         LOGGER.info("Starting with shouldRegisterRecipeRemovedEvent");
         LOGGER.info("Starting with ADD");
@@ -190,16 +192,18 @@ public class CakeShopIT {
               .assertThat("$.ingredients[0].quantity", equalTo(2));
         LOGGER.info("Ending with ADD");
 
+      ApiResponse response = queryForRecipe(recipeId);
+      assertThat(response.httpCode(), is(OK));
 
-        LOGGER.info("Staring with Remove");
+      LOGGER.info("Staring with Remove");
 
-        sendTo(RECIPES_RESOURCE_URI + recipeId).request().post(entity( jsonObject()
+      sendTo(RECIPES_RESOURCE_URI + recipeId).request().post(entity( jsonObject()
                 .add("recipeId", recipeId).build().toString(), REMOVE_RECIPE_MEDIA_TYPE));
 
 
       await().until(() -> eventsWithPayloadContaining(recipeId).count() == 2);
 
-        ApiResponse response = queryForRecipe(recipeId);
+         response = queryForRecipe(recipeId);
         assertThat(response.httpCode(), is(NOT_FOUND));
         LOGGER.info("Ending with Remove");
 

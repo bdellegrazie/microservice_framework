@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Repository;
 
-@Repository
+@Repository(forEntity = CakeOrder.class)
 public interface CakeOrderRepository extends EntityRepository<CakeOrder, UUID> {
 
 
