@@ -17,6 +17,7 @@
         <module>example-domain</module>
         <module>example-persistence</module>
         <module>example-service</module>
+
     </modules>
 
 

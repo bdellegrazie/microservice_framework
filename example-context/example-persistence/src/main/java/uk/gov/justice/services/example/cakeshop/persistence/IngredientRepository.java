@@ -1,5 +1,6 @@
 package uk.gov.justice.services.example.cakeshop.persistence;
 
+import org.apache.deltaspike.data.api.EntityManagerConfig;
 import uk.gov.justice.services.example.cakeshop.persistence.entity.Ingredient;
 import uk.gov.justice.services.example.cakeshop.persistence.entity.Recipe;
 
@@ -9,7 +10,11 @@ import java.util.UUID;
 import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.Repository;
+import uk.gov.justice.services.persistence.CakeShopUnitEntityManagerResolver;
 
+import javax.transaction.Transactional;
+
+//@EntityManagerConfig(entityManagerResolver = CakeShopUnitEntityManagerResolver.class)
 @Repository
 public interface IngredientRepository extends EntityRepository<Ingredient, UUID> {
 

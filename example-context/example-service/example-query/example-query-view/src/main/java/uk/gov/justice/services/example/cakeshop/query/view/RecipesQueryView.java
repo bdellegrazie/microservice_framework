@@ -40,16 +40,16 @@ public class RecipesQueryView {
     @Handles("cakeshop.get-recipe")
     public JsonEnvelope findRecipe(final JsonEnvelope query) {
         LOGGER.info("=============> Inside findRecipe Query View. RecipeId: " + query.payloadAsJsonObject().getString(FIELD_RECIPE_ID));
-
-        return enveloper.withMetadataFrom(query, NAME_RESPONSE_RECIPE).apply(
+        JsonEnvelope envelope =enveloper.withMetadataFrom(query, NAME_RESPONSE_RECIPE).apply(
                 recipeService.findRecipe(query.payloadAsJsonObject().getString(FIELD_RECIPE_ID)));
+        return envelope;
     }
 
     @Handles("cakeshop.search-recipes")
     public JsonEnvelope listRecipes(final JsonEnvelope query) {
         LOGGER.info("=============> Inside listRecipes Query View ");
-
-        return enveloper.withMetadataFrom(query, NAME_RESPONSE_RECIPE_LIST).apply(fetchRecipes(query));
+        JsonEnvelope envelope =enveloper.withMetadataFrom(query, NAME_RESPONSE_RECIPE_LIST).apply(fetchRecipes(query));
+        return  envelope;
     }
 
     private RecipesView fetchRecipes(final JsonEnvelope query) {

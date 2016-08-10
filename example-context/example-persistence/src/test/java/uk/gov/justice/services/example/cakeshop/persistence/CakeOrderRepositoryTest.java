@@ -20,8 +20,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
 public class CakeOrderRepositoryTest {
-
-
     @Inject
     private CakeOrderRepository cakeOrderRepository;
 

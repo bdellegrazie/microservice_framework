@@ -28,6 +28,9 @@ public class Recipe implements Serializable {
         this.glutenFree = glutenFree;
     }
 
+    public Recipe(final UUID id) {
+        this.id = id;
+    }
     public Recipe() {
 
     }
