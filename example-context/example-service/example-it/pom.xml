@@ -316,8 +316,8 @@
                     <jbossHome>${jboss.home}</jbossHome>
                     <serverConfig>${server.config}</serverConfig>
 
-                    <!--      <jvmArgs>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</jvmArgs>
-                    <keepAlive>${wildfly.keepalive}</keepAlive>-->
+                        <jvmArgs>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</jvmArgs>
+                    <!-- <keepAlive>${wildfly.keepalive}</keepAlive>-->
                 </configuration>
                 <executions>
                     <execution>

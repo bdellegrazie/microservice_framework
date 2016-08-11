@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.persistence.*;
@@ -13,24 +15,26 @@ import javax.persistence.*;
 /**
  * Producer of {:link EntityManager} for use with JPA (Delta-spike).
  */
+@ApplicationScoped
 public class EntityManagerProducer {
     private static final String UTC = "UTC";
 
     @PersistenceUnit
     EntityManagerFactory entityManagerFactory;
 
-    @PersistenceContext (type = PersistenceContextType.EXTENDED)
+ //  @PersistenceContext (type = PersistenceContextType.EXTENDED)
     EntityManager entityManager;
 
     @Produces
+    @Default
+    @RequestScoped
     public EntityManager create() {
         TimeZone.setDefault(TimeZone.getTimeZone(UTC));
         if (entityManager == null) {
             entityManager = entityManagerFactory.createEntityManager();
         }
         return entityManager;
-//        return entityManagerFactory.createEntityManager();
-    }
+   }
 
     public void close(@Disposes final EntityManager em) {
         if (em.isOpen()) {
