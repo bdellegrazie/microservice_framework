@@ -26,15 +26,17 @@ import uk.gov.justice.services.core.accesscontrol.AllowAllPolicyEvaluator;
 import uk.gov.justice.services.core.accesscontrol.PolicyEvaluator;
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.cdi.LoggerProducer;
-import uk.gov.justice.services.core.dispatcher.AsynchronousDispatcherProducer;
 import uk.gov.justice.services.core.dispatcher.DispatcherCache;
 import uk.gov.justice.services.core.dispatcher.DispatcherFactory;
 import uk.gov.justice.services.core.dispatcher.Requester;
 import uk.gov.justice.services.core.dispatcher.RequesterProducer;
 import uk.gov.justice.services.core.dispatcher.ServiceComponentObserver;
-import uk.gov.justice.services.core.dispatcher.SynchronousDispatcherProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.eventbuffer.PassThroughEventBufferService;
+import uk.gov.justice.services.core.extension.BeanInstantiater;
+import uk.gov.justice.services.core.interceptor.InterceptorCache;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.logging.JsonEnvelopeLoggerHelper;
@@ -75,14 +77,13 @@ public class RemoteExampleQueryApiIT {
             .add("result", "SUCCESS")
             .build();
     private static final UUID USER_ID = randomUUID();
+    private static final String PEOPLE_GET_USER1 = "people.get-user1";
+    private static final String PEOPLE_QUERY_USER1 = "people.query.user1";
     private static int port = -1;
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8080);
-
     @Inject
     Requester requester;
-    private static final String PEOPLE_GET_USER1 = "people.get-user1";
-    private static final String PEOPLE_QUERY_USER1 = "people.query.user1";
 
     @BeforeClass
     public static void beforeClass() {
@@ -112,8 +113,6 @@ public class RemoteExampleQueryApiIT {
             RestClientProcessor.class,
             RestClientHelper.class,
             DispatcherCache.class,
-            AsynchronousDispatcherProducer.class,
-            SynchronousDispatcherProducer.class,
             RequesterProducer.class,
             ServiceComponentObserver.class,
             StringToJsonObjectConverter.class,
@@ -128,8 +127,13 @@ public class RemoteExampleQueryApiIT {
             DispatcherFactory.class,
             JsonEnvelopeLoggerHelper.class,
             PolicyEvaluator.class,
+            InterceptorChainProcessor.class,
+            PolicyEvaluator.class,
             PassThroughEventBufferService.class,
-            LoggerProducer.class
+            LoggerProducer.class,
+            BeanInstantiater.class,
+            InterceptorChainProcessorProducer.class,
+            InterceptorCache.class
     })
     public WebApp war() {
         return new WebApp()

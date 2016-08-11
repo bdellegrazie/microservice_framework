@@ -20,15 +20,18 @@ import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.cdi.LoggerProducer;
-import uk.gov.justice.services.core.dispatcher.AsynchronousDispatcher;
-import uk.gov.justice.services.core.dispatcher.AsynchronousDispatcherProducer;
 import uk.gov.justice.services.core.dispatcher.DispatcherCache;
 import uk.gov.justice.services.core.dispatcher.DispatcherFactory;
 import uk.gov.justice.services.core.dispatcher.RequesterProducer;
 import uk.gov.justice.services.core.dispatcher.ServiceComponentObserver;
-import uk.gov.justice.services.core.dispatcher.SynchronousDispatcherProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.eventbuffer.EventBufferInterceptor;
 import uk.gov.justice.services.core.extension.AnnotationScanner;
+import uk.gov.justice.services.core.extension.BeanInstantiater;
+import uk.gov.justice.services.core.interceptor.InterceptorCache;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProducer;
+import uk.gov.justice.services.core.interceptor.InterceptorObserver;
 import uk.gov.justice.services.core.it.util.repository.StreamBufferOpenEjbAwareJdbcRepository;
 import uk.gov.justice.services.core.it.util.repository.StreamStatusOpenEjbAwareJdbcRepository;
 import uk.gov.justice.services.core.jms.JmsDestinations;
@@ -36,9 +39,9 @@ import uk.gov.justice.services.core.jms.JmsSenderFactory;
 import uk.gov.justice.services.core.sender.ComponentDestination;
 import uk.gov.justice.services.core.sender.SenderProducer;
 import uk.gov.justice.services.core.util.TestEnvelopeRecorder;
-import uk.gov.justice.services.event.buffer.core.service.ConsecutiveEventBufferService;
 import uk.gov.justice.services.event.buffer.core.repository.streambuffer.StreamBufferEvent;
 import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatus;
+import uk.gov.justice.services.event.buffer.core.service.ConsecutiveEventBufferService;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.jms.DefaultJmsEnvelopeSender;
@@ -80,7 +83,7 @@ public class EventBufferIT {
     private DataSource dataSource;
 
     @Inject
-    private AsynchronousDispatcher asyncDispatcher;
+    private InterceptorChainProcessor chainProcessor;
 
     @Inject
     private AbcEventHandler abcEventHandler;
@@ -95,10 +98,14 @@ public class EventBufferIT {
     @Classes(cdi = true, value = {
             AbcEventHandler.class,
             AnnotationScanner.class,
-            AsynchronousDispatcherProducer.class,
-            SynchronousDispatcherProducer.class,
             RequesterProducer.class,
             ServiceComponentObserver.class,
+
+            InterceptorChainProcessorProducer.class,
+            InterceptorChainProcessor.class,
+            InterceptorCache.class,
+            InterceptorObserver.class,
+            EventBufferInterceptor.class,
 
             SenderProducer.class,
             JmsSenderFactory.class,
@@ -124,7 +131,8 @@ public class EventBufferIT {
             StreamBufferOpenEjbAwareJdbcRepository.class,
             StreamStatusOpenEjbAwareJdbcRepository.class,
             ConsecutiveEventBufferService.class,
-            LoggerProducer.class
+            LoggerProducer.class,
+            BeanInstantiater.class
 
     })
     public WebApp war() {
@@ -147,7 +155,7 @@ public class EventBufferIT {
                 .with(metadataOf(metadataId, EVENT_ABC)
                         .withStreamId(streamId).withVersion(2L))
                 .build();
-        asyncDispatcher.dispatch(envelope);
+        chainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
 
@@ -168,7 +176,7 @@ public class EventBufferIT {
                 .with(metadataOf(metadataId, EVENT_ABC)
                         .withStreamId(streamId).withVersion(1L))
                 .build();
-        asyncDispatcher.dispatch(envelope);
+        chainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
         Optional<StreamStatus> streamStatus = statusRepository.findByStreamId(streamId);
@@ -199,7 +207,7 @@ public class EventBufferIT {
                 .build();
 
 
-        asyncDispatcher.dispatch(envelope);
+        chainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
         Optional<StreamStatus> streamStatus = statusRepository.findByStreamId(streamId);
@@ -218,7 +226,7 @@ public class EventBufferIT {
 
         statusRepository.insert(new StreamStatus(streamId, 2L));
 
-        asyncDispatcher.dispatch(envelope()
+        chainProcessor.process(envelope()
                 .with(metadataOf(metadataId, EVENT_ABC)
                         .withStreamId(streamId).withVersion(4L))
                 .build());
@@ -272,7 +280,7 @@ public class EventBufferIT {
                 )
         );
 
-        asyncDispatcher.dispatch(envelope);
+        chainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
         Optional<StreamStatus> streamStatus = statusRepository.findByStreamId(streamId);
@@ -317,7 +325,7 @@ public class EventBufferIT {
         jdbcStreamBufferRepository.insert(streamBufferEvent2);
         jdbcStreamBufferRepository.insert(streamBufferEvent3);
 
-        asyncDispatcher.dispatch(envelope);
+        chainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
         Optional<StreamStatus> streamStatus = statusRepository.findByStreamId(streamId);

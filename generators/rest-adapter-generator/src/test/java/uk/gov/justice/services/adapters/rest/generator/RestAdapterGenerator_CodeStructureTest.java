@@ -38,8 +38,7 @@ import uk.gov.justice.services.adapter.rest.BasicActionMapper;
 import uk.gov.justice.services.adapter.rest.processor.RestProcessor;
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.core.dispatcher.AsynchronousDispatcher;
-import uk.gov.justice.services.core.dispatcher.SynchronousDispatcher;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -523,13 +522,12 @@ public class RestAdapterGenerator_CodeStructureTest extends BaseRestAdapterGener
                 configurationWithBasePackage(BASE_PACKAGE, outputFolder, emptyMap()));
         Class<?> resourceClass = compiler.compiledClassOf(BASE_PACKAGE, "resource", "DefaultSomePathResource");
 
-        Field dispatcher = resourceClass.getDeclaredField("asyncDispatcher");
-        assertThat(dispatcher, not(nullValue()));
-        assertThat(dispatcher.getType(), equalTo(AsynchronousDispatcher.class));
-        assertThat(dispatcher.getAnnotation(Inject.class), not(nullValue()));
-        assertThat(dispatcher.getModifiers(), is(0));
+        Field chainProcess = resourceClass.getDeclaredField("chainProcessor");
+        assertThat(chainProcess, not(nullValue()));
+        assertThat(chainProcess.getType(), equalTo(InterceptorChainProcessor.class));
+        assertThat(chainProcess.getAnnotation(Inject.class), not(nullValue()));
+        assertThat(chainProcess.getModifiers(), is(0));
     }
-
 
     @Test
     public void shouldAddLoggerConstant() throws Exception {
@@ -560,7 +558,7 @@ public class RestAdapterGenerator_CodeStructureTest extends BaseRestAdapterGener
         Class<?> resourceClass = compiler.compiledClassOf(BASE_PACKAGE, "resource", "DefaultSomePathResource");
 
         assertFalse(stream(resourceClass.getDeclaredFields())
-                .filter(f -> f.getName().equals("asyncDispatcher"))
+                .filter(f -> f.getName().equals("chainProcess"))
                 .findAny()
                 .isPresent());
     }
@@ -576,9 +574,9 @@ public class RestAdapterGenerator_CodeStructureTest extends BaseRestAdapterGener
                 configurationWithBasePackage(BASE_PACKAGE, outputFolder, emptyMap()));
         Class<?> resourceClass = compiler.compiledClassOf(BASE_PACKAGE, "resource", "DefaultSomePathResource");
 
-        Field dispatcher = resourceClass.getDeclaredField("syncDispatcher");
+        Field dispatcher = resourceClass.getDeclaredField("chainProcessor");
         assertThat(dispatcher, not(nullValue()));
-        assertThat(dispatcher.getType(), equalTo(SynchronousDispatcher.class));
+        assertThat(dispatcher.getType(), equalTo(InterceptorChainProcessor.class));
         assertThat(dispatcher.getAnnotation(Inject.class), not(nullValue()));
         assertThat(dispatcher.getModifiers(), is(0));
     }
@@ -595,7 +593,7 @@ public class RestAdapterGenerator_CodeStructureTest extends BaseRestAdapterGener
         Class<?> resourceClass = compiler.compiledClassOf(BASE_PACKAGE, "resource", "DefaultSomePathResource");
 
         assertFalse(stream(resourceClass.getDeclaredFields())
-                .filter(f -> f.getName().equals("syncDispatcher"))
+                .filter(f -> f.getName().equals("synchChainProcess"))
                 .findAny()
                 .isPresent());
 

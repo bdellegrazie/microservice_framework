@@ -25,9 +25,6 @@ public class HandlerMethod {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HandlerMethod.class);
 
-    public static final boolean SYNCHRONOUS = true;
-    public static final boolean ASYNCHRONOUS = false;
-
     private final Object handlerInstance;
     private final Method handlerMethod;
 
@@ -133,15 +130,6 @@ public class HandlerMethod {
         return new HandlerExecutionException(
                 format("Error while invoking handler method %s with parameter %s",
                         handlerMethod, envelope), cause);
-    }
-
-    /**
-     * Check if this handler method is synchronous.
-     *
-     * @return true if the method returns a value
-     */
-    public boolean isSynchronous() {
-        return isSynchronous;
     }
 
     @Override

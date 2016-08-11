@@ -41,7 +41,7 @@ import uk.gov.justice.services.adapter.messaging.JmsProcessor;
 import uk.gov.justice.services.adapter.messaging.JsonSchemaValidationInterceptor;
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.core.dispatcher.AsynchronousDispatcher;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.generators.test.utils.BaseGeneratorTest;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
@@ -84,7 +84,7 @@ public class JmsEndpointGeneratorTest extends BaseGeneratorTest {
     JmsProcessor jmsProcessor;
 
     @Mock
-    AsynchronousDispatcher dispatcher;
+    InterceptorChainProcessor chainProcessor;
 
     @Before
     public void setup() throws Exception {
@@ -364,15 +364,15 @@ public class JmsEndpointGeneratorTest extends BaseGeneratorTest {
     }
 
     @Test
-    public void shouldCreateJmsEndpointWithAnnotatedDispatcherProperty() throws Exception {
+    public void shouldCreateJmsEndpointWithAnnotatedChainProcessProperty() throws Exception {
         generator.run(raml().withDefaultMessagingResource().build(), configurationWithBasePackage(BASE_PACKAGE, outputFolder, emptyMap()));
 
         Class<?> clazz = getJmsListenerClass(BASE_PACKAGE, "SomecontextControllerCommandJmsListener");
-        Field dispatcherField = clazz.getDeclaredField("dispatcher");
-        assertThat(dispatcherField, not(nullValue()));
-        assertThat(dispatcherField.getType(), CoreMatchers.equalTo((AsynchronousDispatcher.class)));
-        assertThat(dispatcherField.getAnnotations(), arrayWithSize(1));
-        assertThat(dispatcherField.getAnnotation(Inject.class), not(nullValue()));
+        Field chainProcessField = clazz.getDeclaredField("chainProcessor");
+        assertThat(chainProcessField, not(nullValue()));
+        assertThat(chainProcessField.getType(), CoreMatchers.equalTo((InterceptorChainProcessor.class)));
+        assertThat(chainProcessField.getAnnotations(), arrayWithSize(1));
+        assertThat(chainProcessField.getAnnotation(Inject.class), not(nullValue()));
     }
 
     @Test
@@ -678,7 +678,7 @@ public class JmsEndpointGeneratorTest extends BaseGeneratorTest {
         JsonEnvelope envelope = envelope().build();
         consumerCaptor.getValue().accept(envelope);
 
-        verify(dispatcher).dispatch(envelope);
+        verify(chainProcessor).process(envelope);
     }
 
     @Test
@@ -729,7 +729,7 @@ public class JmsEndpointGeneratorTest extends BaseGeneratorTest {
     private Object instantiate(Class<?> resourceClass) throws InstantiationException, IllegalAccessException {
         Object resourceObject = resourceClass.newInstance();
         setField(resourceObject, "jmsProcessor", jmsProcessor);
-        setField(resourceObject, "dispatcher", dispatcher);
+        setField(resourceObject, "chainProcessor", chainProcessor);
         return resourceObject;
     }
 

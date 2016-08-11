@@ -6,14 +6,11 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
-import static uk.gov.justice.services.core.handler.HandlerMethod.ASYNCHRONOUS;
-import static uk.gov.justice.services.core.handler.HandlerMethod.SYNCHRONOUS;
 import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelope;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.handler.HandlerMethod;
-import uk.gov.justice.services.core.handler.exception.MissingHandlerException;
 import uk.gov.justice.services.core.handler.registry.exception.DuplicateHandlerException;
 import uk.gov.justice.services.core.handler.registry.exception.InvalidHandlerException;
 import uk.gov.justice.services.core.util.TestEnvelopeRecorder;
@@ -44,7 +41,7 @@ public class HandlerRegistryTest {
     public void shouldReturnMethodOfTheRegisteredAsynchronousHandler() {
         final TestCommandHandler testCommandHandler = new TestCommandHandler();
         createRegistryWith(testCommandHandler);
-        final HandlerMethod handlerMethod = registry.get(COMMAND_NAME, ASYNCHRONOUS);
+        final HandlerMethod handlerMethod = registry.get(COMMAND_NAME);
         assertHandlerMethodInvokesHandler(handlerMethod, testCommandHandler);
     }
 
@@ -52,17 +49,15 @@ public class HandlerRegistryTest {
     public void shouldReturnMethodOfTheRegisteredSynchronousHandler() {
         final TestCommandHandlerWithSynchronousHandler testCommandHandlerWithSynchronousHandler = new TestCommandHandlerWithSynchronousHandler();
         createRegistryWith(testCommandHandlerWithSynchronousHandler);
-        final HandlerMethod handlerMethod = registry.get(COMMAND_NAME, SYNCHRONOUS);
+        final HandlerMethod handlerMethod = registry.get(COMMAND_NAME);
         assertHandlerMethodInvokesHandler(handlerMethod, testCommandHandlerWithSynchronousHandler);
     }
-
-
 
     @Test
     public void shouldReturnMethodOfTheAllEventsHandler() {
         final TestAllEventsHandler testAllEventsHandler = new TestAllEventsHandler();
         createRegistryWith(testAllEventsHandler);
-        final HandlerMethod handlerMethod = registry.get("some.name", ASYNCHRONOUS);
+        final HandlerMethod handlerMethod = registry.get("some.name");
 
         assertHandlerMethodInvokesHandler(handlerMethod, testAllEventsHandler);
 
@@ -74,31 +69,10 @@ public class HandlerRegistryTest {
         final TestCommandHandler testCommandHandler = new TestCommandHandler();
 
         createRegistryWith(testAllEventsHandler, testCommandHandler);
-        final HandlerMethod handlerMethod = registry.get(COMMAND_NAME, ASYNCHRONOUS);
+        final HandlerMethod handlerMethod = registry.get(COMMAND_NAME);
 
         assertHandlerMethodInvokesHandler(handlerMethod, testCommandHandler);
         assertThat(testAllEventsHandler.firstRecordedEnvelope(), nullValue());
-    }
-
-    private void assertHandlerMethodInvokesHandler(final HandlerMethod handlerMethod, final TestEnvelopeRecorder handler) {
-        assertThat(handlerMethod, notNullValue());
-
-        final JsonEnvelope envelope = envelope().build();
-        handlerMethod.execute(envelope);
-
-        assertThat(handler.firstRecordedEnvelope(), sameInstance(envelope));
-    }
-
-    @Test(expected = MissingHandlerException.class)
-    public void shouldThrowExceptionForAsyncMismatch() {
-        createRegistryWith(new TestCommandHandler());
-        assertThat(registry.get(COMMAND_NAME, SYNCHRONOUS), nullValue());
-    }
-
-    @Test(expected = MissingHandlerException.class)
-    public void shouldThrowExceptionForSyncMismatch() {
-        createRegistryWith(new TestCommandHandlerWithSynchronousHandler());
-        assertThat(registry.get(COMMAND_NAME, ASYNCHRONOUS), nullValue());
     }
 
     @Test(expected = InvalidHandlerException.class)
@@ -131,9 +105,18 @@ public class HandlerRegistryTest {
         createRegistryWith(new TestCommandHandlerWithSynchronousHandler(), new TestCommandSynchronousHandlerWithWrongParameter());
     }
 
+    private void assertHandlerMethodInvokesHandler(final HandlerMethod handlerMethod, final TestEnvelopeRecorder handler) {
+        assertThat(handlerMethod, notNullValue());
+
+        final JsonEnvelope envelope = envelope().build();
+        handlerMethod.execute(envelope);
+
+        assertThat(handler.firstRecordedEnvelope(), sameInstance(envelope));
+    }
+
     private void createRegistryWith(Object... handlers) {
         registry = new HandlerRegistry();
-        asList(handlers).stream().forEach(x -> registry.register(x));
+        asList(handlers).forEach(x -> registry.register(x));
     }
 
     public static class MockCommand {

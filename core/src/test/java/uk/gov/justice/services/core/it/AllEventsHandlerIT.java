@@ -19,15 +19,16 @@ import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.cdi.LoggerProducer;
-import uk.gov.justice.services.core.dispatcher.AsynchronousDispatcher;
-import uk.gov.justice.services.core.dispatcher.AsynchronousDispatcherProducer;
 import uk.gov.justice.services.core.dispatcher.DispatcherCache;
 import uk.gov.justice.services.core.dispatcher.DispatcherFactory;
 import uk.gov.justice.services.core.dispatcher.RequesterProducer;
 import uk.gov.justice.services.core.dispatcher.ServiceComponentObserver;
-import uk.gov.justice.services.core.dispatcher.SynchronousDispatcherProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.extension.AnnotationScanner;
+import uk.gov.justice.services.core.extension.BeanInstantiater;
+import uk.gov.justice.services.core.interceptor.InterceptorCache;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
+import uk.gov.justice.services.core.interceptor.InterceptorChainProcessorProducer;
 import uk.gov.justice.services.core.it.util.repository.StreamBufferOpenEjbAwareJdbcRepository;
 import uk.gov.justice.services.core.it.util.repository.StreamStatusOpenEjbAwareJdbcRepository;
 import uk.gov.justice.services.core.jms.JmsDestinations;
@@ -63,7 +64,7 @@ public class AllEventsHandlerIT {
     private static final String EVENT_ABC = "test.event-abc";
 
     @Inject
-    private AsynchronousDispatcher asyncDispatcher;
+    private InterceptorChainProcessor chainProcessor;
 
     @Inject
     private AbcEventHandler abcEventHandler;
@@ -76,10 +77,12 @@ public class AllEventsHandlerIT {
             AbcEventHandler.class,
             AllEventsHandler.class,
             AnnotationScanner.class,
-            AsynchronousDispatcherProducer.class,
-            SynchronousDispatcherProducer.class,
             RequesterProducer.class,
             ServiceComponentObserver.class,
+
+            InterceptorChainProcessorProducer.class,
+            InterceptorChainProcessor.class,
+            InterceptorCache.class,
 
             SenderProducer.class,
             JmsSenderFactory.class,
@@ -105,7 +108,8 @@ public class AllEventsHandlerIT {
             StreamBufferOpenEjbAwareJdbcRepository.class,
             StreamStatusOpenEjbAwareJdbcRepository.class,
             ConsecutiveEventBufferService.class,
-            LoggerProducer.class
+            LoggerProducer.class,
+            BeanInstantiater.class
     })
     public WebApp war() {
         return new WebApp()
@@ -117,7 +121,7 @@ public class AllEventsHandlerIT {
     public void shouldHandleEventByName() {
 
         UUID metadataId = randomUUID();
-        asyncDispatcher.dispatch(envelope()
+        chainProcessor.process(envelope()
                 .with(metadataOf(metadataId, EVENT_ABC)
                         .withStreamId(randomUUID())
                         .withVersion(1l)).build());
@@ -130,7 +134,7 @@ public class AllEventsHandlerIT {
     public void shouldHandleEventByTheAllEventsHandlerIfNamedHandlerNotFound() {
 
         UUID metadataId = randomUUID();
-        asyncDispatcher.dispatch(envelope()
+        chainProcessor.process(envelope()
                 .with(metadataOf(metadataId, "some.unregistered.event")
                         .withStreamId(randomUUID())
                         .withVersion(1l)).build());
