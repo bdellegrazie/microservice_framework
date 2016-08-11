@@ -40,7 +40,7 @@ public class RecipeRemovedEventListener {
     @Handles("cakeshop.recipe-removed")
     public void recipeRemoved(final JsonEnvelope event) {
         final String recipeId = event.payloadAsJsonObject().getString(FIELD_RECIPE_ID);
-        LOGGER.info("=============> Inside remove-recipe Event Listener. RecipeId: " + recipeId);
+        LOGGER.info("=============> Inside remove-recipe Event Listener about to find recipeId: " + recipeId);
         Recipe recipe1 =recipeRepository.findBy(UUID.fromString(recipeId));
         LOGGER.info("=============> Found remove-recipe Event Listener. RecipeId: " + recipe1);
         recipeRepository.remove(recipe1);

@@ -8,20 +8,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.deltaspike.jpa.api.config.base.JpaBaseConfig;
-import org.junit.Ignore;
+import org.junit.After;
 import uk.gov.justice.services.example.cakeshop.persistence.entity.Recipe;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import javax.annotation.Resource;
-import javax.annotation.Resources;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.sql.DataSource;
 import javax.transaction.*;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
@@ -29,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-//@RunWith(CdiTestRunner.class)
+@RunWith(CdiTestRunner.class)
 public class RecipeRepositoryTest {
 
     private static final UUID RECIPE_ID_A = UUID.randomUUID();
@@ -40,55 +33,34 @@ public class RecipeRepositoryTest {
     private static final String RECIPE_NAME_C = "Muffin";
     private static final boolean RECIPE_GLUTEN_FREE_A = true;
 
-
     @Inject
     private RecipeRepository recipeRepository;
 
     private Recipe recipeA;
     private Recipe recipeB;
     private Recipe recipeC;
-  //  private static DataSource CAKE_SHOP_DS;
 
-/*    private  void initCakeShopDb() throws Exception {
-        CAKE_SHOP_DS = initDatabase("db.cakeshop.url", "db.cakeshop.userName", "db.cakeshop.password",
-                "liquibase/view-store-db-changelog.xml");
-    }*/
+    @Inject
+    UserTransaction userTransaction;
 
     @Before
-    public void setup() throws Exception {
-       // initCakeShopDb();
+    public void setup() throws SystemException, NotSupportedException {
+        userTransaction.begin();
         recipeC = createRecipe(RECIPE_ID_C, RECIPE_NAME_C, true);
         recipeRepository.save(recipeC);
         recipeA = createRecipe(RECIPE_ID_A, RECIPE_NAME_A, RECIPE_GLUTEN_FREE_A);
         recipeRepository.save(recipeA);
         recipeB = createRecipe(RECIPE_ID_B, RECIPE_NAME_B, false);
         recipeRepository.save(recipeB);
-
-    }
-    private static final String H2_DRIVER = "org.h2.Driver";
-    private static DataSource initDatabase(final String dbUrlPropertyName,
-                                           final String dbUserNamePropertyName,
-                                           final String dbPasswordPropertyName,
-                                           final String liquibaseEventStoreDbChangelogXml) throws Exception {
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(H2_DRIVER);
-       /* TestProperties properties = TestProperties.getInstance();
-        dataSource.setUrl(properties.value(dbUrlPropertyName));
-        dataSource.setUsername(properties.value(dbUserNamePropertyName));
-        dataSource.setPassword(properties.value(dbPasswordPropertyName));
-*/
-       /* Liquibase liquibase = new Liquibase(liquibaseEventStoreDbChangelogXml,
-                new ClassLoaderResourceAccessor(), new JdbcConnection(dataSource.getConnection()));
-        liquibase.dropAll();
-        liquibase.update("");
-     */   return dataSource;
     }
 
-    //@Ignore
+    @After
+    public void tearDown() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException {
+        userTransaction.commit();
+    }
 
-
+    @Test
     public void shouldFindRecipeById() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-      //  userTxn.begin();
 
         Recipe recipe = recipeRepository.findBy(RECIPE_ID_A);
 
@@ -96,11 +68,9 @@ public class RecipeRepositoryTest {
         assertThat(recipe.getId(), equalTo(RECIPE_ID_A));
         assertThat(recipe.getName(), equalTo(RECIPE_NAME_A));
         assertThat(recipe.isGlutenFree(), is(RECIPE_GLUTEN_FREE_A));
-      //  userTxn.commit();
-
     }
 
-    @Ignore
+    @Test
     public void shouldReturnPage() throws Exception {
         final int pageSize = 2;
         List<Recipe> recipeList = recipeRepository.findBy(pageSize, Optional.empty(), Optional.empty());
@@ -110,7 +80,7 @@ public class RecipeRepositoryTest {
 
     }
 
-    @Ignore
+    @Test
     public void shouldReturnNullIfRecipeNotFound() {
         Recipe recipe = recipeRepository.findBy(UUID.randomUUID());
 
@@ -118,7 +88,7 @@ public class RecipeRepositoryTest {
     }
 
 
-    @Ignore
+    @Test
     public void shouldReturnListOfRecipesMatchingName() {
         List<Recipe> recipeList = recipeRepository.findBy(10, Optional.of("Cake"), Optional.empty());
 
@@ -127,7 +97,7 @@ public class RecipeRepositoryTest {
 
     }
 
-    @Ignore
+    @Test
     public void shouldReturnListOfGlutenFreeOfRecipes() {
         List<Recipe> recipeList = recipeRepository.findBy(10, Optional.empty(), Optional.of(true));
 
@@ -136,14 +106,14 @@ public class RecipeRepositoryTest {
     }
 
 
-    @Ignore
+    @Test
     public void shouldReturnEmptyListOfRecipesIfSearchDoesNotMatch() {
         List<Recipe> recipeList = recipeRepository.findBy(10, Optional.of("InvalidName"), Optional.empty());
 
         assertThat(recipeList, hasSize(0));
     }
 
-    //@Test
+    @Test
     public void shouldReturnAllRecipes() {
         List<Recipe> recipeList = recipeRepository.findAll();
 

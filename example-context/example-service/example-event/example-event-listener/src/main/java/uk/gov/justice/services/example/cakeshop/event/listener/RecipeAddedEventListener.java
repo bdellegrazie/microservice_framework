@@ -47,12 +47,16 @@ public class RecipeAddedEventListener {
 
         final RecipeAdded recipeAdded = jsonObjectConverter.convert(event.payloadAsJsonObject(), RecipeAdded.class);
 
+        LOGGER.info("=============> Inside add-recipe Event Listener about to save RecipeId: " + recipeId);
+
         recipeRepository.save(recipeAddedToRecipeConverter.convert(recipeAdded));
 
         LOGGER.info("=====================================================> Recipe saved, RecipeId: " + recipeId);
 
         for (final Ingredient ingredient : recipeAddedToIngredientsConverter.convert(recipeAdded)) {
             if (ingredientRepository.findByNameIgnoreCase(ingredient.getName()).isEmpty()) {
+                LOGGER.info("=============> Inside add-recipe Event Listener about to save Ingredient Id: " + ingredient.getId());
+
                 ingredientRepository.save(ingredient);
                 LOGGER.info("=====================================================> Ingredient saved, Ingredient Id: " + ingredient.getId());
             }

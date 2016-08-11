@@ -1,47 +1,34 @@
 package uk.gov.justice.services.persistence;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TimeZone;
-
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
-import javax.persistence.*;
+import javax.inject.Scope;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
+import java.util.TimeZone;
 
 /**
  * Producer of {:link EntityManager} for use with JPA (Delta-spike).
  */
-@ApplicationScoped
+
 public class EntityManagerProducer {
     private static final String UTC = "UTC";
 
     @PersistenceUnit
     EntityManagerFactory entityManagerFactory;
 
- //  @PersistenceContext (type = PersistenceContextType.EXTENDED)
-    EntityManager entityManager;
-
     @Produces
-    @Default
     @RequestScoped
     public EntityManager create() {
         TimeZone.setDefault(TimeZone.getTimeZone(UTC));
-        if (entityManager == null) {
-            entityManager = entityManagerFactory.createEntityManager();
-        }
-        return entityManager;
-   }
+        return entityManagerFactory.createEntityManager();
+    }
 
     public void close(@Disposes final EntityManager em) {
         if (em.isOpen()) {
             em.close();
-        }
-        if (entityManager.equals(em)) {
-            entityManager = null;
         }
     }
 }

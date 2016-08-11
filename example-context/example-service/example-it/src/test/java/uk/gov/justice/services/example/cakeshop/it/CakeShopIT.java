@@ -96,7 +96,7 @@ public class CakeShopIT {
     }
 
 
-    //@Test
+    @Test
     public void shouldReturn202ResponseWhenAddingRecipe() throws Exception {
 
         String recipeId = "163af847-effb-46a9-96bc-32a0f7526f88";
@@ -104,7 +104,8 @@ public class CakeShopIT {
                 .post(entity(addRecipeCommand(), ADD_RECIPE_MEDIA_TYPE));
         assertThat(response.getStatus(), is(ACCEPTED));
     }
-    //@Test
+
+    @Test
     public void shouldReturn202ResponseWhenRemovingRecipe() throws Exception {
 
         String recipeId = "163af847-effb-46a9-96bc-32a0f7526f25";
@@ -116,7 +117,7 @@ public class CakeShopIT {
         assertThat(response.getStatus(), is(ACCEPTED));
     }
 
-    //@Test
+    @Test
     public void shouldReturn400ResponseWhenJsonNotAdheringToSchemaIsSent() throws Exception {
 
         String cakeId = "163af847-effb-46a9-96bc-32a0f7526f77";
@@ -125,7 +126,7 @@ public class CakeShopIT {
         assertThat(response.getStatus(), is(BAD_REQUEST));
     }
 
-   //@Test
+    @Test
     public void shouldRegisterRecipeAddedEvent() {
         String recipeId = "163af847-effb-46a9-96bc-32a0f7526f99";
         sendTo(RECIPES_RESOURCE_URI + recipeId).request()
@@ -157,84 +158,70 @@ public class CakeShopIT {
                 .assertThat("$.ingredients[0].quantity", equalTo(2));
     }
 
-  @Test
-//  @Transactional
+    @Test
     public void shouldRegisterRecipeRemovedEvent() {
         LOGGER.info("Starting with shouldRegisterRecipeRemovedEvent");
         LOGGER.info("Starting with ADD");
-      String recipeId = "163af847-effb-46a9-96bc-32a0f7526f92";
-      sendTo(RECIPES_RESOURCE_URI + recipeId).request()
-              .post(entity(
-                      jsonObject()
-                              .add("name", "Vanilla cake")
-                              .add("glutenFree", false)
-                              .add("ingredients", createArrayBuilder()
-                                      .add(createObjectBuilder()
-                                              .add("name", "vanilla")
-                                              .add("quantity", 2)
-                                      ).build()
-                              ).build().toString(),
-                      ADD_RECIPE_MEDIA_TYPE));
+        String recipeId = "163af847-effb-46a9-96bc-32a0f7526f92";
+        sendTo(RECIPES_RESOURCE_URI + recipeId).request()
+                .post(entity(
+                        jsonObject()
+                                .add("name", "Vanilla cake")
+                                .add("glutenFree", false)
+                                .add("ingredients", createArrayBuilder()
+                                        .add(createObjectBuilder()
+                                                .add("name", "vanilla")
+                                                .add("quantity", 2)
+                                        ).build()
+                                ).build().toString(),
+                        ADD_RECIPE_MEDIA_TYPE));
 
-      await().until(() -> eventsWithPayloadContaining(recipeId).count() == 1);
+        await().until(() -> eventsWithPayloadContaining(recipeId).count() == 1);
 
-      EventLog event = eventsWithPayloadContaining(recipeId).findFirst().get();
-      assertThat(event.getName(), is("cakeshop.recipe-added"));
-      with(event.getMetadata())
-              .assertEquals("stream.id", recipeId)
-              .assertEquals("stream.version", 1);
-      String eventPayload = event.getPayload();
-      with(eventPayload)
-              .assertThat("$.recipeId", equalTo(recipeId))
-              .assertThat("$.name", equalTo("Vanilla cake"))
-              .assertThat("$.glutenFree", equalTo(false))
-              .assertThat("$.ingredients[0].name", equalTo("vanilla"))
-              .assertThat("$.ingredients[0].quantity", equalTo(2));
+        EventLog event = eventsWithPayloadContaining(recipeId).findFirst().get();
+        assertThat(event.getName(), is("cakeshop.recipe-added"));
+        with(event.getMetadata())
+                .assertEquals("stream.id", recipeId)
+                .assertEquals("stream.version", 1);
+        String eventPayload = event.getPayload();
+        with(eventPayload)
+                .assertThat("$.recipeId", equalTo(recipeId))
+                .assertThat("$.name", equalTo("Vanilla cake"))
+                .assertThat("$.glutenFree", equalTo(false))
+                .assertThat("$.ingredients[0].name", equalTo("vanilla"))
+                .assertThat("$.ingredients[0].quantity", equalTo(2));
         LOGGER.info("Ending with ADD");
 
-      ApiResponse response = queryForRecipe(recipeId);
-      assertThat(response.httpCode(), is(OK));
+        ApiResponse response = queryForRecipe(recipeId);
+        assertThat(response.httpCode(), is(OK));
 
-      LOGGER.info("Staring with Remove");
+        LOGGER.info("Staring with Remove");
 
-      sendTo(RECIPES_RESOURCE_URI + recipeId).request().post(entity( jsonObject()
+        sendTo(RECIPES_RESOURCE_URI + recipeId).request().post(entity(jsonObject()
                 .add("recipeId", recipeId).build().toString(), REMOVE_RECIPE_MEDIA_TYPE));
 
 
-      await().until(() -> eventsWithPayloadContaining(recipeId).count() == 2);
+        await().until(() -> eventsWithPayloadContaining(recipeId).count() == 2);
 
-         response = queryForRecipe(recipeId);
+        response = queryForRecipe(recipeId);
         assertThat(response.httpCode(), is(NOT_FOUND));
         LOGGER.info("Ending with Remove");
-
-        //to be comments
-        //event = eventsWithPayloadContaining(recipeId).findFirst().get();
-        //assertThat(event.getName(), is("cakeshop.recipe-removed"));
-        //with(event.getMetadata())
-           //     .assertEquals("stream.id", recipeId)
-            //    .assertEquals("stream.version", 1);
-        // eventPayload = event.getPayload();
-       // with(eventPayload)
-              //  .assertThat("$.recipeId", equalTo(recipeId));
-
-
-
     }
-  //  @Test
-    public void shouldReturn200WhenQueryingForRecipes() throws Exception {
 
+    @Test
+    public void shouldReturn200WhenQueryingForRecipes() throws Exception {
         Response response = sendTo(RECIPES_RESOURCE_QUERY_URI + "?pagesize=10").request().accept(QUERY_RECIPES_MEDIA_TYPE).get();
         assertThat(response.getStatus(), is(OK));
     }
 
-   // @Test
+    @Test
     public void shouldReturn400WhenMandatoryQueryParamNotProvided() throws Exception {
 
         Response response = sendTo(RECIPES_RESOURCE_QUERY_URI).request().accept(QUERY_RECIPES_MEDIA_TYPE).get();
         assertThat(response.getStatus(), is(BAD_REQUEST));
     }
 
-  //  @Test
+    @Test
     public void shouldReturn400WhenIncorrectMediaTypeInAccept() throws Exception {
 
         Response response = sendTo(RECIPES_RESOURCE_QUERY_URI).request().accept("*/*").get();
@@ -242,14 +229,14 @@ public class CakeShopIT {
     }
 
 
-    //@Test
+    @Test
     public void shouldReturn404IfRecipeDoesNotExist() {
         ApiResponse response = queryForRecipe("163af847-effb-46a9-96bc-32a0f7526f00");
         assertThat(response.httpCode(), is(NOT_FOUND));
 
     }
 
-    //@Test
+    @Test
     public void shouldReturnRecipeOfGivenId() {
         String recipeId = "163af847-effb-46a9-96bc-32a0f7526f22";
         final String recipeName = "Cheesy cheese cake";
@@ -267,7 +254,7 @@ public class CakeShopIT {
 
     }
 
-    //@Test
+    @Test
     public void shouldFailTransactionOnDBFailureAndRedirectEventToDLQ() throws Exception {
 
         Session jmsSession = jmsSession();
@@ -294,7 +281,7 @@ public class CakeShopIT {
     }
 
 
-    //@Test
+    @Test
     public void shouldReturnRecipes() {
 
         //adding 2 recipes
@@ -321,7 +308,7 @@ public class CakeShopIT {
 
     }
 
-   // @Test
+    @Test
     public void shouldFilterRecipesUsingPageSize() {
 
         //adding 2 recipes
@@ -346,7 +333,7 @@ public class CakeShopIT {
 
     }
 
- //   @Test
+    @Test
     public void shouldFilterGlutenFreeRecipes() {
 
         //adding 2 recipes
@@ -372,7 +359,7 @@ public class CakeShopIT {
 
     }
 
-    //@Test
+    @Test
     public void shouldReturn400WhenInvalidNumericParamPassed() {
         ApiResponse response = queryForRecipes(asList(
                 new BasicNameValuePair("pagesize", "invalid")));
@@ -382,7 +369,7 @@ public class CakeShopIT {
     }
 
 
-    //@Test
+    @Test
     public void shouldReturn400WhenInvalidBooleanParamPassed() {
         ApiResponse response = queryForRecipes(asList(
                 new BasicNameValuePair("pagesize", "30"),
@@ -392,7 +379,7 @@ public class CakeShopIT {
 
     }
 
-   // @Test
+    @Test
     public void shouldReturn202ResponseWhenMakingCake() throws Exception {
 
         String cakeId = "163af847-effb-46a9-96bc-32a0f7526f11";
@@ -401,7 +388,7 @@ public class CakeShopIT {
         assertThat(response.getStatus(), is(ACCEPTED));
     }
 
-   // @Test
+    @Test
     public void shouldNotPersistRecipeWhenIngredientPersistenceFailsDueToSharedTransaction() throws InterruptedException {
         final String recipeId = UUID.randomUUID().toString();
 
@@ -422,7 +409,7 @@ public class CakeShopIT {
         assertThat(queryForRecipe(recipeId).httpCode(), is(NOT_FOUND));
     }
 
-    //@Test
+    @Test
     public void shouldPublishEventToPublicTopic() throws Exception {
 
         Session jmsSession = jmsSession();
@@ -451,6 +438,7 @@ public class CakeShopIT {
         final Queue queue = session.createQueue(queueName);
         return session.createConsumer(queue);
     }
+
     private Session jmsSession() throws JMSException {
         final javax.jms.Connection connection = JMS_CONNECTION_FACTORY.createConnection(JMS_USERNAME, JMS_PASSWORD);
         connection.start();
@@ -458,7 +446,7 @@ public class CakeShopIT {
     }
 
 
-   // @Test
+    @Test
     public void shouldReturnOrderWithUTCOrderDate() {
 
         final String orderId = "263af847-effb-46a9-96bc-32a0f7526e12";
@@ -501,7 +489,6 @@ public class CakeShopIT {
         statement.execute("SHUTDOWN");
         connection.close();
     }
-
 
     private ApiResponse queryForRecipe(final String recipeId) {
         LOGGER.info("Recipe ID: " + recipeId);

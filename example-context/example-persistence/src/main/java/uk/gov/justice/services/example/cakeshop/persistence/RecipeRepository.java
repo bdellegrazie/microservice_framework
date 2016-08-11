@@ -17,7 +17,6 @@ import org.apache.deltaspike.data.api.criteria.CriteriaSupport;
 
 
 @Repository(forEntity = Recipe.class)
-//@EntityManagerConfig(entityManagerResolver = CakeShopUnitEntityManagerResolver.class)
 public abstract class RecipeRepository extends AbstractEntityRepository<Recipe, UUID> implements CriteriaSupport<Recipe> {
 
 

@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 
+import org.junit.After;
 import org.junit.Ignore;
 import uk.gov.justice.services.example.cakeshop.persistence.entity.Ingredient;
 
@@ -15,13 +16,14 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.transaction.*;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-//@RunWith(CdiTestRunner.class)
+@RunWith(CdiTestRunner.class)
 public class IngredientRepositoryTest {
 
     private static final UUID INGREDIENT = UUID.randomUUID();
@@ -38,8 +40,12 @@ public class IngredientRepositoryTest {
     private Ingredient ingredientB;
     private Ingredient ingredientC;
 
+    @Inject
+    UserTransaction userTransaction;
+
     @Before
-    public void setup() {
+    public void setup() throws SystemException, NotSupportedException {
+        userTransaction.begin();
         ingredientA = createIngredient(INGREDIENT, INGREDIENT_NAME_A);
         ingredientRepository.save(ingredientA);
         ingredientB = createIngredient(INGREDIENT_ID_B, INGREDIENT_NAME_B);
@@ -48,23 +54,29 @@ public class IngredientRepositoryTest {
         ingredientRepository.save(ingredientC);
     }
 
-    @Ignore
+    @After
+    public void tearDown() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException {
+        userTransaction.commit();
+    }
+
+    @Test
     public void shouldFindIngredientById() {
         Ingredient ingredient = ingredientRepository.findBy(INGREDIENT);
 
         assertThat(ingredient, is(notNullValue()));
         assertThat(ingredient.getId(), equalTo(INGREDIENT));
         assertThat(ingredient.getName(), equalTo(INGREDIENT_NAME_A));
+
     }
 
-    @Ignore
+    @Test
     public void shouldReturnNullIfIngredientNotFound() {
         Ingredient ingredient = ingredientRepository.findBy(UUID.randomUUID());
 
         assertThat(ingredient, is(nullValue()));
     }
 
-    @Ignore
+    @Test
     public void shouldReturnIngredientsMatchingName() {
         List<Ingredient> ingredientList = ingredientRepository.findByNameIgnoreCase(INGREDIENT_NAME_A);
 
@@ -73,7 +85,7 @@ public class IngredientRepositoryTest {
         assertThat(ingredientList.get(0).getName(), equalTo(INGREDIENT_NAME_A));
     }
 
-    @Ignore
+    @Test
     public void shouldReturnListOfIngredientsMatchingName() {
         List<Ingredient> ingredientList = ingredientRepository.findByNameIgnoreCase("%o%");
 
@@ -82,14 +94,14 @@ public class IngredientRepositoryTest {
         assertThat(ingredientList, hasItems(ingredientC));
     }
 
-    @Ignore
+    @Test
     public void shouldReturnEmptyListOfIngredientsIfSearchDoesNotMatch() {
         List<Ingredient> ingredientList = ingredientRepository.findByNameIgnoreCase("InvalidName");
 
         assertThat(ingredientList, hasSize(0));
     }
 
-    @Ignore
+    @Test
     public void shouldReturnAllIngredients() {
         List<Ingredient> ingredientList = ingredientRepository.findAll();
 

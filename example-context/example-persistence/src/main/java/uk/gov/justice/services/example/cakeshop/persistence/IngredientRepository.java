@@ -10,7 +10,6 @@ import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.Repository;
 import uk.gov.justice.services.example.cakeshop.persistence.entity.Recipe;
 
-//@EntityManagerConfig(entityManagerResolver = CakeShopUnitEntityManagerResolver.class)
 @Repository(forEntity = Ingredient.class)
 public interface IngredientRepository extends EntityRepository<Ingredient, UUID> {
 

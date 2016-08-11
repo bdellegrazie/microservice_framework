@@ -5,6 +5,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import org.junit.After;
+import org.junit.Before;
 import uk.gov.justice.services.example.cakeshop.persistence.entity.CakeOrder;
 
 import java.time.ZoneId;
@@ -18,22 +20,34 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
+import javax.transaction.*;
 
-//@RunWith(CdiTestRunner.class)
-//@TestControl(startScopes = TransactionScoped.class)
-//@Transactional
+@RunWith(CdiTestRunner.class)
 public class CakeOrderRepositoryTest {
     @Inject
     private CakeOrderRepository cakeOrderRepository;
 
     private CakeOrder cakeOrderA;
 
-    // @Test
+    @Inject
+    UserTransaction userTransaction;
+
+    @Before
+    public void setup() throws SystemException, NotSupportedException {
+        userTransaction.begin();
+    }
+
+    @After
+    public void tearDown() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException {
+        userTransaction.commit();
+    }
+
+    @Test
     public void shouldStoreOrder() {
 
         final UUID orderId = UUID.randomUUID();
         final UUID recipeId = UUID.randomUUID();
-        final ZonedDateTime deliveryDate = ZonedDateTime.of(2014,5,13,4,12,12,0, ZoneId.of("UTC"));
+        final ZonedDateTime deliveryDate = ZonedDateTime.of(2014, 5, 13, 4, 12, 12, 0, ZoneId.of("UTC"));
 
         CakeOrder cakeOrderA = new CakeOrder(orderId, recipeId, deliveryDate);
         cakeOrderRepository.save(cakeOrderA);
@@ -49,8 +63,4 @@ public class CakeOrderRepositoryTest {
     }
 
 
-
-
-
-
-    }
+}
