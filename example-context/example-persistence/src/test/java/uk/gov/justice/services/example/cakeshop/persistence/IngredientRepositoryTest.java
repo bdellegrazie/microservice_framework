@@ -45,7 +45,7 @@ public class IngredientRepositoryTest {
 
     @Before
     public void setup() throws SystemException, NotSupportedException {
-        userTransaction.begin();
+      userTransaction.begin();
         ingredientA = createIngredient(INGREDIENT, INGREDIENT_NAME_A);
         ingredientRepository.save(ingredientA);
         ingredientB = createIngredient(INGREDIENT_ID_B, INGREDIENT_NAME_B);
@@ -53,14 +53,13 @@ public class IngredientRepositoryTest {
         ingredientC = createIngredient(INGREDIENT_ID_C, INGREDIENT_NAME_C);
         ingredientRepository.save(ingredientC);
     }
-
     @After
     public void tearDown() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException {
-        userTransaction.commit();
+       userTransaction.commit();
     }
 
     @Test
-    public void shouldFindIngredientById() {
+    public void shouldFindIngredientById()  {
         Ingredient ingredient = ingredientRepository.findBy(INGREDIENT);
 
         assertThat(ingredient, is(notNullValue()));

@@ -17,6 +17,7 @@ import uk.gov.justice.services.example.cakeshop.persistence.entity.Recipe;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import java.util.UUID;
 
@@ -46,7 +47,6 @@ public class RecipeRemovedEventListener {
         recipeRepository.remove(recipe1);
         Recipe recipe2 =recipeRepository.findBy(UUID.fromString(recipeId));
         LOGGER.info("=============> Finishing remove-recipe Event Listener. RecipeId: " +  (recipe2==null));
-
-
+        //LOGGER.info("=============> Finishing remove-recipe Event Listener. RecipeId: " + recipe1.getId());
     }
 }

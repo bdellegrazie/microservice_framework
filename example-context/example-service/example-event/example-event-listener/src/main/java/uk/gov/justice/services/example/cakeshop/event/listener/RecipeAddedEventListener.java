@@ -14,6 +14,7 @@ import uk.gov.justice.services.example.cakeshop.persistence.entity.Ingredient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,9 @@ public class RecipeAddedEventListener {
                 ingredientRepository.save(ingredient);
                 LOGGER.info("=====================================================> Ingredient saved, Ingredient Id: " + ingredient.getId());
             }
-            LOGGER.info("=====================================================> Skipped adding ingredient as it already exists, Ingredient Name: " + ingredient.getName());
+            else{
+                LOGGER.info("=====================================================> Skipped adding ingredient as it already exists, Ingredient Name: " + ingredient.getName());
+            }
         }
     }
 }

@@ -95,6 +95,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.mycila</groupId>
+            <artifactId>mycila-junit</artifactId>
+            <version>1.4.ga</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>event-repository-liquibase</artifactId>
             <version>${project.version}</version>
@@ -317,7 +323,7 @@
                     <serverConfig>${server.config}</serverConfig>
 
                         <jvmArgs>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</jvmArgs>
-                    <!-- <keepAlive>${wildfly.keepalive}</keepAlive>-->
+                    <!--<keepAlive>${wildfly.keepalive}</keepAlive>-->
                 </configuration>
                 <executions>
                     <execution>

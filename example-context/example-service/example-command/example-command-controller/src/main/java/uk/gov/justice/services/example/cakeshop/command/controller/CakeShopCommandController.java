@@ -20,6 +20,7 @@ public class CakeShopCommandController {
 
     @Handles("cakeshop.add-recipe")
     public void addRecipe(final JsonEnvelope command) {
+        LOGGER.info("=============> Inside add-recipe Command Handler");
         sender.send(command);
     }
 
@@ -32,11 +33,15 @@ public class CakeShopCommandController {
 
     @Handles("cakeshop.make-cake")
     public void makeCake(final JsonEnvelope command) {
+        LOGGER.info("=============> Inside make-cake Command Handler");
+
         sender.send(command);
     }
 
     @Handles("cakeshop.order-cake")
     public void orderCake(final JsonEnvelope command) {
+        LOGGER.info("=============> Inside order-cake Command Handler");
+
         sender.send(command);
     }
 }

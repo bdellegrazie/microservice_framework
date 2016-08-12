@@ -43,6 +43,7 @@ public class CakeOrderRepositoryTest {
     }
 
     @Test
+    @Transactional
     public void shouldStoreOrder() {
 
         final UUID orderId = UUID.randomUUID();

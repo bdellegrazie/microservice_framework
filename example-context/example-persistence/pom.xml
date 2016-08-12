@@ -12,6 +12,12 @@
     <artifactId>example-persistence</artifactId>
 
     <dependencies>
+      <!--  <dependency>
+            <groupId>com.mycila</groupId>
+            <artifactId>mycila-junit</artifactId>
+            <version>1.4.ga</version>
+            <scope>test</scope>
+        </dependency>-->
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>

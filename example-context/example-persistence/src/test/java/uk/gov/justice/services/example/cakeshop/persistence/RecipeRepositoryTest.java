@@ -33,6 +33,7 @@ public class RecipeRepositoryTest {
     private static final String RECIPE_NAME_C = "Muffin";
     private static final boolean RECIPE_GLUTEN_FREE_A = true;
 
+
     @Inject
     private RecipeRepository recipeRepository;
 
