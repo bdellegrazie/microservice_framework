@@ -1,20 +1,20 @@
 package uk.gov.justice.services.example.cakeshop.it;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.jsonassert.JsonAssert.emptyCollection;
-import static com.jayway.jsonassert.JsonAssert.with;
-import static java.util.Arrays.asList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.client.Entity.entity;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import org.apache.activemq.artemis.utils.Random;
+import liquibase.Liquibase;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 import org.junit.*;
+import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.eventlog.EventLog;
@@ -22,6 +22,13 @@ import uk.gov.justice.services.example.cakeshop.it.util.ApiResponse;
 import uk.gov.justice.services.example.cakeshop.it.util.StandaloneJdbcEventLogRepository;
 import uk.gov.justice.services.example.cakeshop.it.util.TestProperties;
 
+import javax.jms.*;
+import javax.json.JsonObjectBuilder;
+import javax.sql.DataSource;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -33,30 +40,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.json.JsonObjectBuilder;
-import javax.sql.DataSource;
-import javax.transaction.Transactional;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-
-import liquibase.Liquibase;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.resource.ClassLoaderResourceAccessor;
-import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.jsonassert.JsonAssert.emptyCollection;
+import static com.jayway.jsonassert.JsonAssert.with;
+import static java.util.Arrays.asList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static javax.ws.rs.client.Entity.entity;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CakeShopIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(CakeShopIT.class);
 
@@ -97,7 +91,7 @@ public class CakeShopIT {
     }
 
 
-    @Ignore
+    @Test
     public void shouldReturn202ResponseWhenAddingRecipe() throws Exception {
 
         String recipeId = "163af847-effb-46a9-96bc-32a0f7526f88";
@@ -106,7 +100,7 @@ public class CakeShopIT {
         assertThat(response.getStatus(), is(ACCEPTED));
     }
 
-    @Ignore
+    @Test
     public void shouldReturn202ResponseWhenRemovingRecipe() throws Exception {
 
         String recipeId = "163af847-effb-46a9-96bc-32a0f7526f25";
@@ -118,7 +112,7 @@ public class CakeShopIT {
         assertThat(response.getStatus(), is(ACCEPTED));
     }
 
-    @Ignore
+    @Test
     public void shouldReturn400ResponseWhenJsonNotAdheringToSchemaIsSent() throws Exception {
 
         String cakeId = "163af847-effb-46a9-96bc-32a0f7526f77";
@@ -127,7 +121,7 @@ public class CakeShopIT {
         assertThat(response.getStatus(), is(BAD_REQUEST));
     }
 
-    @Ignore
+    @Test
     public void shouldRegisterRecipeAddedEvent() {
         String recipeId = "163af847-effb-46a9-96bc-32a0f7526f99";
         sendTo(RECIPES_RESOURCE_URI + recipeId).request()
@@ -160,15 +154,24 @@ public class CakeShopIT {
     }
 
     @Test
-    public final void runConcurrentMethod() throws InterruptedException {
+    public final void addAndRemove() throws InterruptedException {
+        shouldRegisterRecipeRemovedEvent();
+    }
+
+
+    @Test
+    public final void sequentialAddAndRemove() throws InterruptedException {
         shouldRegisterRecipeRemovedEvent();
         shouldRegisterRecipeRemovedEvent();
-      shouldRegisterRecipeRemovedEvent();
-        /*  shouldRegisterRecipeRemovedEvent();
         shouldRegisterRecipeRemovedEvent();
-     */   /*
+        shouldRegisterRecipeRemovedEvent();
+        shouldRegisterRecipeRemovedEvent();
+    }
+
+    @Test
+    public final void concurrentAddAndRemove() throws InterruptedException {
         ExecutorService exec = Executors.newFixedThreadPool(5);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i <10; i++) {
             exec.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -177,15 +180,14 @@ public class CakeShopIT {
             });
         }
         exec.shutdown();
-        exec.awaitTermination(50, TimeUnit.SECONDS);
-        */
+        exec.awaitTermination(180, TimeUnit.SECONDS);
     }
 
 
     public void shouldRegisterRecipeRemovedEvent() {
         LOGGER.info("Starting with shouldRegisterRecipeRemovedEvent");
         LOGGER.info("Starting with ADD");
-        final String recipeId = UUID.randomUUID().toString();
+        final String  recipeId = UUID.randomUUID().toString();
 
         sendTo(RECIPES_RESOURCE_URI + recipeId).request()
                 .post(entity(
@@ -226,40 +228,40 @@ public class CakeShopIT {
 
         await().until(() -> eventsWithPayloadContaining(recipeId).count() == 2);
 
-      /*  response = queryForRecipe(recipeId);
-        assertThat(response.httpCode(), is(NOT_FOUND));*/
+         response = queryForRecipe(recipeId);
+        assertThat(response.httpCode(), is(NOT_FOUND));
         LOGGER.info("Ending with Remove");
 
     }
 
-    @Ignore
+    @Test
     public void shouldReturn200WhenQueryingForRecipes() throws Exception {
         Response response = sendTo(RECIPES_RESOURCE_QUERY_URI + "?pagesize=10").request().accept(QUERY_RECIPES_MEDIA_TYPE).get();
         assertThat(response.getStatus(), is(OK));
     }
 
-    @Ignore
+    @Test
     public void shouldReturn400WhenMandatoryQueryParamNotProvided() throws Exception {
 
         Response response = sendTo(RECIPES_RESOURCE_QUERY_URI).request().accept(QUERY_RECIPES_MEDIA_TYPE).get();
         assertThat(response.getStatus(), is(BAD_REQUEST));
     }
 
-    @Ignore
+    @Test
     public void shouldReturn400WhenIncorrectMediaTypeInAccept() throws Exception {
         Response response = sendTo(RECIPES_RESOURCE_QUERY_URI).request().accept("*/*").get();
         assertThat(response.getStatus(), is(BAD_REQUEST));
     }
 
 
-    @Ignore
+    @Test
     public void shouldReturn404IfRecipeDoesNotExist() {
         ApiResponse response = queryForRecipe("163af847-effb-46a9-96bc-32a0f7526f00");
         assertThat(response.httpCode(), is(NOT_FOUND));
 
     }
 
-    @Ignore
+    @Test
     public void shouldReturnRecipeOfGivenId() {
         String recipeId = "163af847-effb-46a9-96bc-32a0f7526f22";
         final String recipeName = "Cheesy cheese cake";
@@ -277,7 +279,7 @@ public class CakeShopIT {
 
     }
 
-    @Ignore
+    @Test
     public void shouldFailTransactionOnDBFailureAndRedirectEventToDLQ() throws Exception {
 
         Session jmsSession = jmsSession();
@@ -304,7 +306,7 @@ public class CakeShopIT {
     }
 
 
-    @Ignore
+    @Test
     public void shouldReturnRecipes() {
 
         //adding 2 recipes
@@ -331,7 +333,7 @@ public class CakeShopIT {
 
     }
 
-    @Ignore
+    @Test
     public void shouldFilterRecipesUsingPageSize() {
 
         //adding 2 recipes
@@ -356,7 +358,7 @@ public class CakeShopIT {
 
     }
 
-    @Ignore
+    @Test
     public void shouldFilterGlutenFreeRecipes() {
 
         //adding 2 recipes
@@ -382,7 +384,7 @@ public class CakeShopIT {
 
     }
 
-    @Ignore
+    @Test
     public void shouldReturn400WhenInvalidNumericParamPassed() {
         ApiResponse response = queryForRecipes(asList(
                 new BasicNameValuePair("pagesize", "invalid")));
@@ -392,7 +394,7 @@ public class CakeShopIT {
     }
 
 
-    @Ignore
+    @Test
     public void shouldReturn400WhenInvalidBooleanParamPassed() {
         ApiResponse response = queryForRecipes(asList(
                 new BasicNameValuePair("pagesize", "30"),
@@ -402,16 +404,9 @@ public class CakeShopIT {
 
     }
 
-    @Ignore
-    public void shouldReturn202ResponseWhenMakingCake() throws Exception {
 
-        String cakeId = "163af847-effb-46a9-96bc-32a0f7526f11";
-        Response response = sendTo(CAKES_RESOURCE_URI + cakeId).request()
-                .post(entity(makeCakeCommand(), MAKE_CAKE_MEDIA_TYPE));
-        assertThat(response.getStatus(), is(ACCEPTED));
-    }
 
-    @Ignore
+    @Test
     public void shouldNotPersistRecipeWhenIngredientPersistenceFailsDueToSharedTransaction() throws InterruptedException {
         final String recipeId = UUID.randomUUID().toString();
 
@@ -432,7 +427,7 @@ public class CakeShopIT {
         assertThat(queryForRecipe(recipeId).httpCode(), is(NOT_FOUND));
     }
 
-    @Ignore
+    @Test
     public void shouldPublishEventToPublicTopic() throws Exception {
 
         Session jmsSession = jmsSession();
@@ -469,7 +464,7 @@ public class CakeShopIT {
     }
 
 
-    @Ignore
+    @Test
     public void shouldReturnOrderWithUTCOrderDate() {
 
         final String orderId = "263af847-effb-46a9-96bc-32a0f7526e12";
@@ -585,7 +580,8 @@ public class CakeShopIT {
     }
 
     private WebTarget sendTo(String url) {
-        return client.target(url);
+        WebTarget webTarget = client.target(url);
+        return webTarget;
     }
 
     private Entity<String> recipeEntity(final String recipeName) {
@@ -613,8 +609,12 @@ public class CakeShopIT {
 
     @Before
     public void before() throws Exception {
-        client = new ResteasyClientBuilder().connectionPoolSize(3).build();
-
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(cm).build();
+        cm.setMaxTotal(200); // Increase max total connection to 200
+        cm.setDefaultMaxPerRoute(20); // Increase default max connection per route to 20
+        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient);
+        client = new ResteasyClientBuilder().httpEngine(engine).build();
     }
 
     @After

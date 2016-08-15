@@ -9,6 +9,7 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 
 import org.junit.After;
+import org.junit.Assert;
 import uk.gov.justice.services.example.cakeshop.persistence.entity.Recipe;
 
 import java.util.List;
@@ -122,6 +123,38 @@ public class RecipeRepositoryTest {
         assertThat(recipeList, hasItems(recipeA));
         assertThat(recipeList, hasItems(recipeB));
         assertThat(recipeList, hasItems(recipeC));
+    }
+
+    @Test
+    public void removeTest() {
+        List<Recipe> recipeList = recipeRepository.findAll();
+
+        assertThat(recipeList, hasSize(3));
+        assertThat(recipeList, hasItems(recipeA));
+        assertThat(recipeList, hasItems(recipeB));
+        assertThat(recipeList, hasItems(recipeC));
+
+        Recipe recipeAA =  recipeRepository.findBy(recipeA.getId());
+        recipeRepository.remove(recipeAA);
+        Recipe recipeAAA =  recipeRepository.findBy(recipeA.getId());
+        Assert.assertNull(recipeAAA);
+
+        Recipe recipeBB =  recipeRepository.findBy(recipeB.getId());
+        recipeRepository.remove(recipeBB);
+        Recipe recipeBBB =  recipeRepository.findBy(recipeB.getId());
+        Assert.assertNull(recipeBBB);
+
+        Recipe recipeCC =  recipeRepository.findBy(recipeC.getId());
+        recipeRepository.remove(recipeCC);
+        Recipe recipeCCC =  recipeRepository.findBy(recipeC.getId());
+        Assert.assertNull(recipeCCC);
+
+
+        List<Recipe> recipeList2 = recipeRepository.findAll();
+
+        assertThat(recipeList2, hasSize(0));
+
+
     }
 
     private Recipe createRecipe(final UUID id, final String name, final boolean glutenFree) {

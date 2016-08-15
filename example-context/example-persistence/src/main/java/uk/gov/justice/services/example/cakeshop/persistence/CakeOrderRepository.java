@@ -1,5 +1,6 @@
 package uk.gov.justice.services.example.cakeshop.persistence;
 
+import org.apache.deltaspike.data.api.EntityManagerConfig;
 import uk.gov.justice.services.example.cakeshop.persistence.entity.CakeOrder;
 
 import java.util.UUID;

@@ -32,21 +32,12 @@ public class EntityManagerProducer {
     @RequestScoped
     public EntityManager create() {
         TimeZone.setDefault(TimeZone.getTimeZone(UTC));
-        return  entityManagerFactory.createEntityManager();
-     /*   LOGGER.info("Create EntityManagerProducer: " + this.toString());
-        LOGGER.info("Create EntityManagerFactory: " + entityManagerFactory.toString());
-        LOGGER.info("Create entityManager: " + entityManager.toString());*/
-       // return entityManager;
-
+        return entityManagerFactory.createEntityManager();
     }
 
     public void close(@Disposes final EntityManager em) {
         if (em.isOpen()) {
-           // LOGGER.info("Close EntityManagerProducer: " + this.toString());
-          //      LOGGER.info("Close EntityManagerFactory: " + entityManagerFactory.toString());
-            //LOGGER.info("Close entityManager: "+ entityManager.toString());
-
-            em.close();
+             em.close();
         }
     }
 }
