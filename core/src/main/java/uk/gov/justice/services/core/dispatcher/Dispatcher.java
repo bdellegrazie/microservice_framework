@@ -51,10 +51,9 @@ public class Dispatcher {
      *
      * @param envelope the envelope to dispatch to a handler
      */
-    public JsonEnvelope asynchronousDispatch(final JsonEnvelope envelope) {
+    public void asynchronousDispatch(final JsonEnvelope envelope) {
         eventBufferService.currentOrderedEventsWith(envelope)
                 .forEach(bufferedEnvelope -> doDispatch(bufferedEnvelope, ASYNCHRONOUS));
-        return null;
     }
 
     /**
