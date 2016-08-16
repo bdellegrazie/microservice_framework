@@ -1,7 +1,10 @@
 package uk.gov.justice.services.core.interceptor;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class InterceptorChain {
@@ -30,16 +33,15 @@ public class InterceptorChain {
     }
 
     /**
-     * Process each {@link InterceptorContext} from a stream with the all the remaining {@link
-     * Interceptor} on the queue.
+     * Process each interceptor context in a stream with all the remaining interceptors on the queue.
      *
-     * @param interceptorContexts the stream of interceptor contexts to process
-     * @return a stream of processed interceptor contexts
+     * @param interceptorContexts the stream of {@link InterceptorContext} to process
+     * @return a list of processed interceptor contexts
      */
-    public Stream<InterceptorContext> processNext(final Stream<InterceptorContext> interceptorContexts) {
-        return interceptorContexts.map(interceptorContext ->
-                copyOfInterceptorChain().processNext(interceptorContext)
-        );
+    public List<InterceptorContext> processNext(final Stream<InterceptorContext> interceptorContexts) {
+        return interceptorContexts
+                .map(interceptorContext -> copyOfInterceptorChain().processNext(interceptorContext))
+                .collect(toList());
     }
 
     @SuppressWarnings("unchecked")
