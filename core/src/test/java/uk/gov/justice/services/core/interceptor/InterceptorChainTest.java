@@ -1,6 +1,5 @@
 package uk.gov.justice.services.core.interceptor;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertThat;
@@ -50,7 +49,7 @@ public class InterceptorChainTest {
                 interceptorContext_2,
                 interceptorContext_3);
 
-        final List<InterceptorContext> results = interceptorChain.processNext(interceptorContexts).collect(toList());
+        final List<InterceptorContext> results = interceptorChain.processNext(interceptorContexts);
 
         assertThat(results.size(), is(3));
         assertThat(results, hasItems(
