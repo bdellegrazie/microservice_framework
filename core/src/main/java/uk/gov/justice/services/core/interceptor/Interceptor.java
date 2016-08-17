@@ -1,16 +1,9 @@
 package uk.gov.justice.services.core.interceptor;
 
 /**
- * Interface that all interceptors must implement.  Provides default priority values and process
- * signature.
+ * Interface that all interceptors must implement.
  */
 public interface Interceptor {
-
-    int EVENT_BUFFER = 1000;
-    int AUDIT_BEFORE_ACCESS_CONTROL = 2000;
-    int ACCESS_CONTROL = 3000;
-    int AUDIT_AFTER_ACCESS_CONTROL = 4000;
-    int USER = 100000;
 
     /**
      * Process an interception with the given {@link InterceptorContext} and {@link
@@ -25,7 +18,7 @@ public interface Interceptor {
 
     /**
      * Provides the priority level of an interceptor, lower is higher priority.  This is used to
-     * priorities the calling chain of interceptors.
+     * set the calling sequence the chain of interceptors.
      *
      * @return the priority level of the interceptor
      */
