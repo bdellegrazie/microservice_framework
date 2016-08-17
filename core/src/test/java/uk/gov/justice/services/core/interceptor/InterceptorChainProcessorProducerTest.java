@@ -56,7 +56,7 @@ public class InterceptorChainProcessorProducerTest {
 
         @Override
         public int priority() {
-            return ACCESS_CONTROL;
+            return 1000;
         }
     }
 }
