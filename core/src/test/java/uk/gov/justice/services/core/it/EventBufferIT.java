@@ -83,7 +83,7 @@ public class EventBufferIT {
     private DataSource dataSource;
 
     @Inject
-    private InterceptorChainProcessor chainProcessor;
+    private InterceptorChainProcessor interceptorChainProcessor;
 
     @Inject
     private AbcEventHandler abcEventHandler;
@@ -155,7 +155,7 @@ public class EventBufferIT {
                 .with(metadataOf(metadataId, EVENT_ABC)
                         .withStreamId(streamId).withVersion(2L))
                 .build();
-        chainProcessor.process(envelope);
+        interceptorChainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
 
@@ -176,7 +176,7 @@ public class EventBufferIT {
                 .with(metadataOf(metadataId, EVENT_ABC)
                         .withStreamId(streamId).withVersion(1L))
                 .build();
-        chainProcessor.process(envelope);
+        interceptorChainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
         Optional<StreamStatus> streamStatus = statusRepository.findByStreamId(streamId);
@@ -207,7 +207,7 @@ public class EventBufferIT {
                 .build();
 
 
-        chainProcessor.process(envelope);
+        interceptorChainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
         Optional<StreamStatus> streamStatus = statusRepository.findByStreamId(streamId);
@@ -226,7 +226,7 @@ public class EventBufferIT {
 
         statusRepository.insert(new StreamStatus(streamId, 2L));
 
-        chainProcessor.process(envelope()
+        interceptorChainProcessor.process(envelope()
                 .with(metadataOf(metadataId, EVENT_ABC)
                         .withStreamId(streamId).withVersion(4L))
                 .build());
@@ -280,7 +280,7 @@ public class EventBufferIT {
                 )
         );
 
-        chainProcessor.process(envelope);
+        interceptorChainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
         Optional<StreamStatus> streamStatus = statusRepository.findByStreamId(streamId);
@@ -325,7 +325,7 @@ public class EventBufferIT {
         jdbcStreamBufferRepository.insert(streamBufferEvent2);
         jdbcStreamBufferRepository.insert(streamBufferEvent3);
 
-        chainProcessor.process(envelope);
+        interceptorChainProcessor.process(envelope);
 
         List<StreamBufferEvent> streamBufferEvents = jdbcStreamBufferRepository.streamById(streamId).collect(toList());
         Optional<StreamStatus> streamStatus = statusRepository.findByStreamId(streamId);

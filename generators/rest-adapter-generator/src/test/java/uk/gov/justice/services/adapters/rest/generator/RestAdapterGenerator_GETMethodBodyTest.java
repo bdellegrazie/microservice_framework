@@ -56,6 +56,9 @@ import org.mockito.Mock;
 public class RestAdapterGenerator_GETMethodBodyTest extends BaseRestAdapterGeneratorTest {
 
     private static final String NULL_STRING_VALUE = null;
+    private static final String INTERCEPTOR_CHAIN_PROCESSOR = "interceptorChainProcessor";
+    private static final String REST_PROCESSOR = "restProcessor";
+    private static final String ACTION_MAPPER = "actionMapper";
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -491,9 +494,9 @@ public class RestAdapterGenerator_GETMethodBodyTest extends BaseRestAdapterGener
 
     private Object instanceOf(Class<?> resourceClass) throws InstantiationException, IllegalAccessException {
         Object resourceObject = resourceClass.newInstance();
-        setField(resourceObject, "restProcessor", restProcessor);
-        setField(resourceObject, "chainProcessor", chainProcessor);
-        setField(resourceObject, "actionMapper", actionMapper);
+        setField(resourceObject, REST_PROCESSOR, restProcessor);
+        setField(resourceObject, INTERCEPTOR_CHAIN_PROCESSOR, chainProcessor);
+        setField(resourceObject, ACTION_MAPPER, actionMapper);
         return resourceObject;
     }
 

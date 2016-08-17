@@ -70,7 +70,7 @@ public class EventHandlerIT {
     private static final String EVENT_ABC = "test.event-abc";
 
     @Inject
-    private InterceptorChainProcessor chainProcessor;
+    private InterceptorChainProcessor interceptorChainProcessor;
 
     @Inject
     private AbcEventHandler abcEventHandler;
@@ -130,7 +130,7 @@ public class EventHandlerIT {
     public void shouldHandleEventByName() {
 
         UUID metadataId = randomUUID();
-        chainProcessor.process(envelope()
+        interceptorChainProcessor.process(envelope()
                 .with(metadataOf(metadataId, EVENT_ABC)
                         .withStreamId(randomUUID())
                         .withVersion(1l)).build());
@@ -143,7 +143,7 @@ public class EventHandlerIT {
     public void shouldHandleEventByTheAllEventsHandlerIfNamedHandlerNotFound() {
 
         UUID metadataId = randomUUID();
-        chainProcessor.process(envelope()
+        interceptorChainProcessor.process(envelope()
                 .with(metadataOf(metadataId, "some.unregistered.event")
                         .withStreamId(randomUUID())
                         .withVersion(1l)).build());
@@ -156,7 +156,7 @@ public class EventHandlerIT {
     public void shouldCallAuditInterceptor() {
 
         UUID metadataId = UUID.randomUUID();
-        chainProcessor.process(envelope()
+        interceptorChainProcessor.process(envelope()
                 .with(metadataOf(metadataId, EVENT_ABC)
                         .withStreamId(randomUUID())
                         .withVersion(1l)).build());

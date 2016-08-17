@@ -73,9 +73,12 @@ class JaxRsImplementationGenerator {
     private static final String VARIABLE_PARAMS_COLLECTION_BUILDER = "validParameterCollectionBuilder";
     private static final String PARAMS_PUT_REQUIRED_STATEMENT_FORMAT = "$L.putRequired($S, $N, $T.$L)";
     private static final String PARAMS_PUT_OPTIONAL_STATEMENT_FORMAT = "$L.putOptional($S, $N, $T.$L)";
-    private static final String SYNCHRONOUS_METHOD_STATEMENT = "return restProcessor.processSynchronously(chainProcessor::process, $L.actionOf($S, \"GET\", headers), headers, $L.parameters())";
-    private static final String ASYNCHRONOUS_METHOD_STATEMENT = "return restProcessor.processAsynchronously(chainProcessor::process, $L.actionOf($S, \"POST\", headers), %s, headers, $L.parameters())";
+
+    private static final String INTERCEPTOR_CHAIN_PROCESSOR = "interceptorChainProcessor";
     private static final String ACTION_MAPPER_VARIABLE = "actionMapper";
+
+    private static final String SYNCHRONOUS_METHOD_STATEMENT = "return restProcessor.processSynchronously($L::process, $L.actionOf($S, \"GET\", headers), headers, $L.parameters())";
+    private static final String ASYNCHRONOUS_METHOD_STATEMENT = "return restProcessor.processAsynchronously($L::process, $L.actionOf($S, \"POST\", headers), %s, headers, $L.parameters())";
 
     private final GeneratorConfig configuration;
 
@@ -140,7 +143,7 @@ class JaxRsImplementationGenerator {
                         .addAnnotation(AnnotationSpec.builder(Named.class)
                                 .addMember(DEFAULT_ANNOTATION_PARAMETER, "$S", className + "ActionMapper").build())
                         .build())
-                .addField(FieldSpec.builder(InterceptorChainProcessor.class, "chainProcessor")
+                .addField(FieldSpec.builder(InterceptorChainProcessor.class, INTERCEPTOR_CHAIN_PROCESSOR)
                         .addAnnotation(Inject.class)
                         .build())
                 .addField(FieldSpec.builder(HttpHeaders.class, "headers")
@@ -309,7 +312,10 @@ class JaxRsImplementationGenerator {
                 CodeBlock.builder()
                         .add(putAllQueryParamsInCollectionBuilder(queryParams))
                         .addStatement(SYNCHRONOUS_METHOD_STATEMENT,
-                                ACTION_MAPPER_VARIABLE, resourceMethodName, VARIABLE_PARAMS_COLLECTION_BUILDER)
+                                INTERCEPTOR_CHAIN_PROCESSOR,
+                                ACTION_MAPPER_VARIABLE,
+                                resourceMethodName,
+                                VARIABLE_PARAMS_COLLECTION_BUILDER)
                         .build();
     }
 
@@ -323,7 +329,11 @@ class JaxRsImplementationGenerator {
     private Supplier<CodeBlock> methodBodyForPost(final String resourceMethodName, final boolean hasPayload) {
         return () -> CodeBlock.builder()
                 .addStatement(String.format(ASYNCHRONOUS_METHOD_STATEMENT, hasPayload ? "$T.of(entity)" : "$T.empty()"),
-                        ACTION_MAPPER_VARIABLE, resourceMethodName, Optional.class, VARIABLE_PARAMS_COLLECTION_BUILDER)
+                        INTERCEPTOR_CHAIN_PROCESSOR,
+                        ACTION_MAPPER_VARIABLE,
+                        resourceMethodName,
+                        Optional.class,
+                        VARIABLE_PARAMS_COLLECTION_BUILDER)
                 .build();
     }
 

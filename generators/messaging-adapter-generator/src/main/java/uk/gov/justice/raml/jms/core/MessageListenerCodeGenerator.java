@@ -53,7 +53,7 @@ class MessageListenerCodeGenerator {
 
     private static final String DEFAULT_ANNOTATION_PARAMETER = "value";
     private static final String ACTIVATION_CONFIG_PARAMETER = "activationConfig";
-    private static final String INTERCEPTOR_CHAIN_PROCESS = "chainProcessor";
+    private static final String INTERCEPTOR_CHAIN_PROCESS = "interceptorChainProcessor";
     private static final String JMS_PROCESSOR_FIELD = "jmsProcessor";
     private static final String LOGGER_FIELD = "LOGGER";
 

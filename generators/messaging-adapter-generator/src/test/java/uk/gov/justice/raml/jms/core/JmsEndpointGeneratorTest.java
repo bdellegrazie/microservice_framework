@@ -79,12 +79,13 @@ import org.slf4j.Logger;
 public class JmsEndpointGeneratorTest extends BaseGeneratorTest {
     private static final String BASE_PACKAGE = "uk.test";
     private static final String BASE_PACKAGE_FOLDER = "/uk/test";
+    private static final String INTERCEPTOR_CHAIN_PROCESSOR = "interceptorChainProcessor";
 
     @Mock
     JmsProcessor jmsProcessor;
 
     @Mock
-    InterceptorChainProcessor chainProcessor;
+    InterceptorChainProcessor interceptorChainProcessor;
 
     @Before
     public void setup() throws Exception {
@@ -368,7 +369,7 @@ public class JmsEndpointGeneratorTest extends BaseGeneratorTest {
         generator.run(raml().withDefaultMessagingResource().build(), configurationWithBasePackage(BASE_PACKAGE, outputFolder, emptyMap()));
 
         Class<?> clazz = getJmsListenerClass(BASE_PACKAGE, "SomecontextControllerCommandJmsListener");
-        Field chainProcessField = clazz.getDeclaredField("chainProcessor");
+        Field chainProcessField = clazz.getDeclaredField(INTERCEPTOR_CHAIN_PROCESSOR);
         assertThat(chainProcessField, not(nullValue()));
         assertThat(chainProcessField.getType(), CoreMatchers.equalTo((InterceptorChainProcessor.class)));
         assertThat(chainProcessField.getAnnotations(), arrayWithSize(1));
@@ -678,7 +679,7 @@ public class JmsEndpointGeneratorTest extends BaseGeneratorTest {
         JsonEnvelope envelope = envelope().build();
         consumerCaptor.getValue().accept(envelope);
 
-        verify(chainProcessor).process(envelope);
+        verify(interceptorChainProcessor).process(envelope);
     }
 
     @Test
@@ -729,7 +730,7 @@ public class JmsEndpointGeneratorTest extends BaseGeneratorTest {
     private Object instantiate(Class<?> resourceClass) throws InstantiationException, IllegalAccessException {
         Object resourceObject = resourceClass.newInstance();
         setField(resourceObject, "jmsProcessor", jmsProcessor);
-        setField(resourceObject, "chainProcessor", chainProcessor);
+        setField(resourceObject, INTERCEPTOR_CHAIN_PROCESSOR, interceptorChainProcessor);
         return resourceObject;
     }
 

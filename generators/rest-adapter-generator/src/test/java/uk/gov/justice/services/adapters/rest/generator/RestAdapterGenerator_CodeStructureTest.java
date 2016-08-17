@@ -64,6 +64,8 @@ import org.slf4j.Logger;
 
 public class RestAdapterGenerator_CodeStructureTest extends BaseRestAdapterGeneratorTest {
 
+    private static final String INTERCEPTOR_CHAIN_PROCESSOR = "interceptorChainProcessor";
+
     @Test
     public void shouldGenerateAnnotatedResourceInterface() throws Exception {
         generator.run(
@@ -522,7 +524,7 @@ public class RestAdapterGenerator_CodeStructureTest extends BaseRestAdapterGener
                 configurationWithBasePackage(BASE_PACKAGE, outputFolder, emptyMap()));
         Class<?> resourceClass = compiler.compiledClassOf(BASE_PACKAGE, "resource", "DefaultSomePathResource");
 
-        Field chainProcess = resourceClass.getDeclaredField("chainProcessor");
+        Field chainProcess = resourceClass.getDeclaredField(INTERCEPTOR_CHAIN_PROCESSOR);
         assertThat(chainProcess, not(nullValue()));
         assertThat(chainProcess.getType(), equalTo(InterceptorChainProcessor.class));
         assertThat(chainProcess.getAnnotation(Inject.class), not(nullValue()));
@@ -574,7 +576,7 @@ public class RestAdapterGenerator_CodeStructureTest extends BaseRestAdapterGener
                 configurationWithBasePackage(BASE_PACKAGE, outputFolder, emptyMap()));
         Class<?> resourceClass = compiler.compiledClassOf(BASE_PACKAGE, "resource", "DefaultSomePathResource");
 
-        Field dispatcher = resourceClass.getDeclaredField("chainProcessor");
+        Field dispatcher = resourceClass.getDeclaredField(INTERCEPTOR_CHAIN_PROCESSOR);
         assertThat(dispatcher, not(nullValue()));
         assertThat(dispatcher.getType(), equalTo(InterceptorChainProcessor.class));
         assertThat(dispatcher.getAnnotation(Inject.class), not(nullValue()));

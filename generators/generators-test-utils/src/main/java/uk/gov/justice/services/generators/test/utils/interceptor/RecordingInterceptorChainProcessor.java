@@ -10,7 +10,7 @@ import java.util.Optional;
 import javax.inject.Singleton;
 
 @Singleton
-public class RecordingChainProcessor extends EnvelopeRecorder implements InterceptorChainProcessor {
+public class RecordingInterceptorChainProcessor extends EnvelopeRecorder implements InterceptorChainProcessor {
 
     private List<MockResponse> mockResponses = new LinkedList<>();
 
