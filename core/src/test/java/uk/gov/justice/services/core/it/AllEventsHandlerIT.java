@@ -20,7 +20,6 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.cdi.LoggerProducer;
 import uk.gov.justice.services.core.dispatcher.DispatcherCache;
-import uk.gov.justice.services.core.dispatcher.DispatcherFactory;
 import uk.gov.justice.services.core.dispatcher.RequesterProducer;
 import uk.gov.justice.services.core.dispatcher.ServiceComponentObserver;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -101,7 +100,6 @@ public class AllEventsHandlerIT {
             AllowAllPolicyEvaluator.class,
             AccessControlService.class,
             DispatcherCache.class,
-            DispatcherFactory.class,
             JsonEnvelopeLoggerHelper.class,
             PolicyEvaluator.class,
 

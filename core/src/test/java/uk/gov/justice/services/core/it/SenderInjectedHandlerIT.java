@@ -17,7 +17,6 @@ import uk.gov.justice.services.core.accesscontrol.PolicyEvaluator;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.cdi.LoggerProducer;
 import uk.gov.justice.services.core.dispatcher.DispatcherCache;
-import uk.gov.justice.services.core.dispatcher.DispatcherFactory;
 import uk.gov.justice.services.core.dispatcher.ServiceComponentObserver;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.eventbuffer.PassThroughEventBufferService;
@@ -73,7 +72,6 @@ public class SenderInjectedHandlerIT {
             AllowAllPolicyEvaluator.class,
             AccessControlService.class,
             DispatcherCache.class,
-            DispatcherFactory.class,
             JsonEnvelopeLoggerHelper.class,
             PolicyEvaluator.class,
             PassThroughEventBufferService.class,

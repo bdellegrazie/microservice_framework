@@ -37,7 +37,6 @@ public class DispatcherCacheTest {
     @Before
     public void setUp() throws Exception {
         dispatcherCache = new DispatcherCache();
-        dispatcherCache.dispatcherFactory = new DispatcherFactory();
     }
 
     @Test
