@@ -57,7 +57,7 @@ public class InterceptorObserverTest {
 
         @Override
         public int priority() {
-            return USER;
+            return 1000;
         }
     }
 }

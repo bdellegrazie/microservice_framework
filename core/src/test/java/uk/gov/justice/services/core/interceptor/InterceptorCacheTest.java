@@ -59,10 +59,10 @@ public class InterceptorCacheTest {
         when(beanInstantiater.instantiate(bean_3)).thenReturn(interceptor_3);
         when(beanInstantiater.instantiate(bean_4)).thenReturn(interceptor_4);
 
-        when(interceptor_1.priority()).thenReturn(Interceptor.ACCESS_CONTROL);
-        when(interceptor_2.priority()).thenReturn(Interceptor.AUDIT_BEFORE_ACCESS_CONTROL);
-        when(interceptor_3.priority()).thenReturn(Interceptor.AUDIT_AFTER_ACCESS_CONTROL);
-        when(interceptor_4.priority()).thenReturn(Interceptor.EVENT_BUFFER);
+        when(interceptor_1.priority()).thenReturn(3);
+        when(interceptor_2.priority()).thenReturn(2);
+        when(interceptor_3.priority()).thenReturn(4);
+        when(interceptor_4.priority()).thenReturn(1);
 
         interceptorCache.initialise();
 
